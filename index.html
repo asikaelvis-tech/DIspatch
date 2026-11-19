@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ardova Plc | Digital Depot Dispatch Workspace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            gmail: {
+              bg: '#f6f8fc',
+              search: '#eaf1fb',
+              compose: '#c2e7ff',
+              composeText: '#001d35',
+              activeTab: '#d3e3fd',
+              activeText: '#041e49',
+              hoverTab: '#eaebef',
+              border: '#e0e4eb'
+            },
+            ardova: {
+              green: '#006838',
+              amber: '#F59E0B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f6f8fc;
+      color: #1f1f1f;
+    }
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #dadce0;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #bdc1c6;
+    }
+    .mail-row:hover {
+      box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px 0 rgba(60,64,67,.25), 0 1px 3px 1px rgba(60,64,67,.12);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col bg-[#f6f8fc] text-[#1f1f1f] antialiased">
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ===================================================================== -->
+  <!-- 1. ROLE-BASED LOGIN SCREEN (GOOGLE / ARDOVA WORKSPACE STYLE)          -->
+  <!-- ===================================================================== -->
+  <div id="login-screen" class="fixed inset-0 z-40 bg-[#f6f8fc] flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-4xl rounded-[28px] shadow-sm border border-[#e0e4eb] overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+      
+      <!-- Left Branding Column -->
+      <div class="lg:col-span-5 bg-gradient-to-br from-[#006838] via-[#004d29] to-slate-900 text-white p-8 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-extrabold text-xl shadow-md">
+              A
+            </div>
+            <div>
+              <span class="font-extrabold tracking-tight text-lg block leading-none">ARDOVA PLC</span>
+              <span class="text-[11px] text-emerald-200 font-medium">Apapa & Ikeja Terminal Ops</span>
+            </div>
+          </div>
+
+          <h1 class="text-2xl font-bold tracking-tight pt-2">
+            Integrated Digital Depot Dispatch Workspace
+          </h1>
+          <p class="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+            Sign in with your department workspace account to manage truck safety clearance, advance loading ticket generation, gantry bay loading, waybill issuance, and real-time turnaround analytics.
+          </p>
+        </div>
+
+        <div class="pt-8 space-y-2.5 text-xs text-emerald-100/80 border-t border-emerald-700/60 mt-8">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Real-time QHSSE → Inventory → Loading sync</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span>Automated department timestamp & SLA tracking</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+            <span>Centralised PTL, Ticket & Waybill Audit Vault</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Department Account Selector -->
+      <div class="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-center">
+        <div class="mb-5">
+          <h2 class="text-xl font-bold text-slate-900">Choose a Department Account</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Select a role below to launch its dedicated Gmail-style dispatch dashboard (all departments share live depot data).</p>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Role 1: QHSSE / Safety -->
+          <button onclick="loginAs('qhsse')"
+            class="w-full text-left p-4 rounded-2xl border border-[#e0e4eb] hover:border-[#006838] hover:bg-[#f6f8fc] transition-all flex items-center justify-between group cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-sm shrink-0">
+                QH
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-slate-900 group-hover:text-[#006838]">QHSSE / Safety Department</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Stage 1</span>
+                </div>
+                <p class="text-xs text-slate-500">Engr. Amina Yusuf • <span class="font-mono text-[11px]">safety.apapa@ardovaplc.com</span></p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Clear trucks, upload Permit to Load (PTL) & dispatch to Inventory</p>
+              </div>
+            </div>
+            <span class="text-slate-400 group-hover:text-[#006838] font-bold text-sm">→</span>
+          </button>
+
+          <!-- Role 2: Inventory -->
+          <button onclick="loginAs('inventory')"
+            class="w-full text-left p-4 rounded-2xl border border-[#e0e4eb] hover:border-blue-600 hover:bg-[#f6f8fc] transition-all flex items-center justify-between group cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-sm shrink-0">
+                IN
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-slate-900 group-hover:text-blue-700">Inventory & Billing Department</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Stage 2 & 3</span>
+                </div>
+                <p class="text-xs text-slate-500">Tunde Adeyemi • <span class="font-mono text-[11px]">inventory.apapa@ardovaplc.com</span></p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Receive PTLs from Safety, generate Loading Tickets & issue Waybills directly</p>
+              </div>
+            </div>
+            <span class="text-slate-400 group-hover:text-blue-700 font-bold text-sm">→</span>
+          </button>
+
+          <!-- Role 3: Management Monitoring -->
+          <button onclick="loginAs('management')"
+            class="w-full text-left p-4 rounded-2xl border border-[#e0e4eb] hover:border-amber-600 hover:bg-[#f6f8fc] transition-all flex items-center justify-between group cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-sm shrink-0">
+                MG
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-slate-900 group-hover:text-amber-700">Management & Audit Oversight</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Executive</span>
+                </div>
+                <p class="text-xs text-slate-500">Oluwaseun Martins • <span class="font-mono text-[11px]">depot.manager@ardovaplc.com</span></p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Monitor stage turnaround times, flag missing audit uploads & inspect files</p>
+              </div>
+            </div>
+            <span class="text-slate-400 group-hover:text-amber-700 font-bold text-sm">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2. GMAIL-INSPIRED WORKSPACE SHELL                                     -->
+  <!-- ===================================================================== -->
+  <div id="workspace-shell" class="hidden flex-1 flex flex-col h-screen overflow-hidden">
+
+    <!-- Top Header Bar (Gmail Layout) -->
+    <header class="h-16 px-3 sm:px-4 flex items-center justify-between gap-3 bg-[#f6f8fc] shrink-0">
+      <!-- Left: Hamburger + Ardova Dispatch Logo -->
+      <div class="flex items-center gap-2 sm:gap-3 min-w-[200px] sm:w-[240px]">
+        <button onclick="toggleSidebar()" title="Main menu"
+          class="p-2.5 rounded-full hover:bg-[#eaebef] text-slate-600 transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#006838] to-emerald-600 text-white flex items-center justify-center font-extrabold text-base shadow-xs">
+            A
+          </div>
+          <div class="leading-tight">
+            <span class="font-bold text-base sm:text-lg tracking-tight text-slate-800">Ardova <span class="font-normal text-slate-500">Dispatch</span></span>
+            <span id="header-dept-subtitle" class="block text-[10px] font-semibold uppercase tracking-wider text-[#006838]">QHSSE Safety Portal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Gmail Pill Search Bar (#eaf1fb) -->
+      <div class="flex-1 max-w-2xl hidden md:block">
+        <div class="relative flex items-center bg-[#eaf1fb] focus-within:bg-white focus-within:shadow-md rounded-full px-4 py-2.5 transition-all border border-transparent focus-within:border-[#e0e4eb]">
+          <svg class="w-5 h-5 text-slate-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" id="global-search-input" onkeyup="handleGlobalSearch()"
+            placeholder="Search Truck ID (e.g. LAG-419-XY), PTL, Loading Ticket, or Waybill..."
+            class="w-full bg-transparent text-sm text-slate-800 placeholder-slate-500 focus:outline-none" />
+          <button onclick="clearGlobalSearch()" id="clear-search-btn" class="hidden text-slate-400 hover:text-slate-700 ml-2 text-xs font-bold cursor-pointer">✕</button>
+        </div>
+      </div>
+
+      <!-- Right: Active Status Pill + Quick Role Switcher + Sign Out -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <!-- Active Pill (Matches Gmail Screenshot "Active") -->
+        <div class="hidden xl:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e0e4eb] text-xs font-medium text-slate-700 shadow-2xs">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span>Active</span>
+          <span id="live-clock" class="font-mono text-[11px] text-slate-400 border-l border-slate-200 pl-2"></span>
+        </div>
+
+        <!-- Instant Role Switcher Dropdown -->
+        <div class="relative">
+          <select id="quick-role-select" onchange="loginAs(this.value)" title="Switch Department Login"
+            class="text-xs font-semibold bg-white hover:bg-[#eaebef] text-slate-800 border border-[#e0e4eb] rounded-full px-3 py-2 pr-7 appearance-none cursor-pointer focus:outline-none focus:border-[#006838]">
+            <option value="qhsse">Dept: QHSSE / Safety</option>
+            <option value="inventory">Dept: Inventory & Billing</option>
+            <option value="management">Dept: Management & Audit</option>
+          </select>
+          <svg class="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        <!-- User Avatar & Switch Login Screen Button -->
+        <button onclick="showLoginScreen()" title="Back to Department Login Screen"
+          class="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-white hover:bg-[#eaebef] border border-[#e0e4eb] transition-colors cursor-pointer">
+          <div id="header-avatar" class="w-7 h-7 rounded-full bg-[#006838] text-white font-bold text-xs flex items-center justify-center">
+            QH
+          </div>
+          <span id="header-user-name" class="hidden sm:inline text-xs font-semibold text-slate-700">Engr. Amina</span>
+          <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Body: Left Sidebar (256px) + White Rounded Workspace Card -->
+    <div class="flex-1 flex overflow-hidden px-2 sm:px-3 pb-3 gap-2">
+
+      <!-- Left Sidebar (Gmail Style) -->
+      <aside id="left-sidebar" class="w-64 shrink-0 flex flex-col justify-between py-1 pr-1 overflow-y-auto transition-all">
+        <div class="space-y-4">
+          <!-- Primary Action Button (Gmail "+ Compose" style #c2e7ff) -->
+          <div class="px-1">
+            <button id="sidebar-compose-btn" onclick="triggerPrimaryComposeAction()"
+              class="inline-flex items-center gap-3 px-5 py-4 rounded-2xl bg-[#c2e7ff] hover:shadow-md text-[#001d35] font-semibold text-sm transition-all cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <span id="sidebar-compose-label">Clear New Truck</span>
+            </button>
+          </div>
+
+          <!-- Department Navigation Tabs -->
+          <nav id="sidebar-nav-list" class="space-y-0.5 pr-2">
+            <!-- Populated dynamically per department -->
+          </nav>
+
+          <!-- Labels / Live Stage Counters (Gmail Labels Section) -->
+          <div class="pt-3 border-t border-[#e0e4eb]/80 px-3">
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-2">
+              <span>Depot Stage Labels</span>
+              <button onclick="simulateNewGateTruck()" title="Simulate New Gate Arrival"
+                class="text-slate-500 hover:text-slate-900 text-base leading-none font-bold px-1.5 py-0.5 rounded hover:bg-[#eaebef] cursor-pointer">+</button>
+            </div>
+            <div id="sidebar-labels-list" class="space-y-1.5 text-xs">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Storage / SLA Footer -->
+        <div class="px-3 pt-4 mt-4 border-t border-[#e0e4eb]/70 text-[11px] text-slate-500 space-y-1.5">
+          <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div class="h-full bg-[#006838] rounded-full" style="width: 39%"></div>
+          </div>
+          <div class="flex justify-between">
+            <span>Audit Vault: 39% of 15 GB</span>
+            <span class="text-emerald-700 font-semibold">SLA OK</span>
+          </div>
+          <div class="text-[10px] text-slate-400">Apapa Terminal • Synced live</div>
+        </div>
+      </aside>
+
+      <!-- Main Workspace Card (White Rounded Container #ffffff matching Gmail) -->
+      <main class="flex-1 bg-white rounded-2xl border border-[#e0e4eb] flex flex-col overflow-hidden shadow-2xs">
+        
+        <!-- Workspace Toolbar (Refresh, Filter, Dept Context) -->
+        <div class="h-12 px-4 border-b border-[#f1f3f4] flex items-center justify-between shrink-0 bg-white">
+          <div class="flex items-center gap-3">
+            <button onclick="renderWorkspace()" title="Refresh Queue"
+              class="p-2 rounded-full hover:bg-[#f1f3f4] text-slate-600 transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <span id="workspace-breadcrumb" class="text-xs sm:text-sm font-semibold text-slate-700">Clearance Queue</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="simulateNewGateTruck()"
+              class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#f6f8fc] hover:bg-[#eaf1fb] text-slate-700 border border-[#e0e4eb] transition-colors cursor-pointer">
+              + Simulate Gate Arrival
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Dynamic Workspace Content -->
+        <div id="workspace-content" class="flex-1 overflow-y-auto">
+          <!-- Populated dynamically based on role & selected tab -->
+        </div>
+
+        <!-- Workspace Bottom Footer (Matching Gmail Footer) -->
+        <div class="px-4 py-2.5 border-t border-[#f1f3f4] bg-white text-[11px] text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-1 shrink-0">
+          <span>Ardova Plc Integrated Depot Dispatch • Automatic Stage Timestamping Active</span>
+          <span id="footer-last-activity">Last depot sync: 0 minutes ago</span>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 3. DOCUMENT PREVIEW & AUDIT TRAIL MODAL                               -->
+  <!-- ===================================================================== -->
+  <div id="doc-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-2xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#e0e4eb] overflow-hidden">
+      <div class="px-6 py-4 bg-[#f6f8fc] border-b border-[#e0e4eb] flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[#006838]">Central Audit Repository</span>
+          <h3 id="modal-title" class="text-base sm:text-lg font-bold text-slate-900">Truck Audit Dossier</h3>
+        </div>
+        <button onclick="closeDocModal()" class="p-2 rounded-full hover:bg-[#eaebef] text-slate-500 cursor-pointer">✕</button>
+      </div>
+      <div id="modal-content" class="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm"></div>
+      <div class="px-6 py-3.5 bg-[#f6f8fc] border-t border-[#e0e4eb] flex justify-end">
+        <button onclick="closeDocModal()" class="px-5 py-2 rounded-full bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // DEPARTMENT PROFILES & GMAIL NAVIGATION CONFIG (3 DEPARTMENTS)
+    // =========================================================================
+    const ROLES = {
+      qhsse: {
+        id: 'qhsse',
+        title: 'QHSSE / Safety Department',
+        shortTitle: 'QHSSE Safety Portal',
+        user: 'Engr. Amina Yusuf',
+        email: 'safety.apapa@ardovaplc.com',
+        avatar: 'QH',
+        avatarBg: 'bg-emerald-700',
+        composeLabel: 'Clear New Truck',
+        tabs: [
+          { id: 'qhsse_clear', label: 'Clearance Queue', icon: 'inbox' },
+          { id: 'qhsse_sent', label: 'Sent to Inventory', icon: 'sent' },
+          { id: 'doc_uploads', label: 'Document Uploads', icon: 'upload' }
+        ]
+      },
+      inventory: {
+        id: 'inventory',
+        title: 'Inventory & Billing Department',
+        shortTitle: 'Inventory & Ticket Desk',
+        user: 'Tunde Adeyemi',
+        email: 'inventory.apapa@ardovaplc.com',
+        avatar: 'IN',
+        avatarBg: 'bg-blue-700',
+        composeLabel: 'Issue Ticket / Waybill',
+        tabs: [
+          { id: 'inv_inbox', label: 'Inbox (From QHSSE)', icon: 'inbox' },
+          { id: 'inv_waybill', label: 'Ready for Waybill', icon: 'starred' },
+          { id: 'inv_issued', label: 'Closed & Released', icon: 'sent' },
+          { id: 'doc_uploads', label: 'Document Uploads', icon: 'upload' }
+        ]
+      },
+      management: {
+        id: 'management',
+        title: 'Management & Audit Oversight',
+        shortTitle: 'Executive TAT & Audit Monitor',
+        user: 'Oluwaseun Martins',
+        email: 'depot.manager@ardovaplc.com',
+        avatar: 'MG',
+        avatarBg: 'bg-amber-600',
+        composeLabel: 'Audit Compliance Alert',
+        tabs: [
+          { id: 'mgmt_analytics', label: 'Turnaround Analytics', icon: 'chart' },
+          { id: 'mgmt_tracker', label: 'Live & Closed Jobs', icon: 'inbox' },
+          { id: 'doc_uploads', label: 'Document Uploads', icon: 'upload' }
+        ]
+      }
+    };
+
+    let currentRole = null;
+    let currentTab = null;
+    let selectedTruckId = null;
+    let searchQuery = '';
+    let sidebarOpen = true;
+    let pendingUploadFiles = {}; // Holds real File objects selected before form submission
+    let docFilterMode = 'all'; // 'all' | 'missing' | 'complete'
+
+    function minsAgoStr(mins) {
+      const d = new Date(Date.now() - mins * 60000);
+      return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes) return '';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    function buildDocRecord(fileObj, uploadedByDept, uploadedByUser) {
+      if (!fileObj) return null;
+      return {
+        name: fileObj.name,
+        size: formatBytes(fileObj.size),
+        type: fileObj.type || 'application/octet-stream',
+        url: URL.createObjectURL(fileObj),
+        uploadedAt: minsAgoStr(0),
+        uploadedBy: `${uploadedByUser} (${uploadedByDept})`
+      };
+    }
+
+    // Create sample downloadable/viewable blobs for seeded documents so every seeded file can also be previewed
+    function createSeedDoc(filename, title, details) {
+      const content = `ARDOVA PLC - DIGITAL DEPOT DISPATCH AUDIT RECORD\n================================================\nDocument: ${title}\nFile: ${filename}\n${details}\nVerified Timestamp: ${new Date().toLocaleString('en-NG')}`;
+      const blob = new Blob([content], { type: 'text/plain' });
+      return {
+        name: filename,
+        size: formatBytes(blob.size),
+        type: 'text/plain',
+        url: URL.createObjectURL(blob),
+        uploadedAt: minsAgoStr(12),
+        uploadedBy: 'System Seeded Record'
+      };
+    }
+
+    // =========================================================================
+    // SHARED REAL-TIME DEPOT STATE (3-STAGE STREAMLINED FLOW)
+    // =========================================================================
+    let depotTrucks = [
+      {
+        truckId: 'LAG-419-XY',
+        driver: 'Musa Abdullahi',
+        transporter: 'Ardova Haulage Fleet',
+        product: 'PMS (Petrol)',
+        volume: '45,000 L',
+        stage: 'AWAITING_QHSSE',
+        ptlNumber: '',
+        salesOrder: 'SO-AP-88210',
+        ticketNumber: '',
+        bay: '',
+        waybillNumber: '',
+        docs: { ptl: null, ticket: null, waybill: null },
+        durations: { qhsse: 6, invTicket: 0, loadingWaybill: 0 },
+        timestamps: { gateIn: minsAgoStr(6), qhsseSent: null, ticketIssued: null, waybillReleased: null },
+        auditTrail: [
+          { time: minsAgoStr(6), dept: 'Gate Security', user: 'S. Balogun', note: 'Truck LAG-419-XY arrived at Apapa Safety Inspection Gate.' }
+        ]
+      },
+      {
+        truckId: 'KJA-702-AA',
+        driver: 'Chinedu Okafor',
+        transporter: 'Bovas Energy Logistics',
+        product: 'AGO (Diesel)',
+        volume: '33,000 L',
+        stage: 'AWAITING_TICKET',
+        ptlNumber: 'PTL-2026-4410',
+        salesOrder: 'SO-AP-88214',
+        ticketNumber: '',
+        bay: '',
+        waybillNumber: '',
+        docs: {
+          ptl: createSeedDoc('PTL_KJA702AA_Verified.pdf', 'Permit to Load (PTL-2026-4410)', 'Truck: KJA-702-AA | Driver: Chinedu Okafor | Product: AGO 33,000 L'),
+          ticket: null,
+          waybill: null
+        },
+        durations: { qhsse: 7, invTicket: 4, loadingWaybill: 0 },
+        timestamps: { gateIn: minsAgoStr(11), qhsseSent: minsAgoStr(4), ticketIssued: null, waybillReleased: null },
+        auditTrail: [
+          { time: minsAgoStr(11), dept: 'Gate Security', user: 'S. Balogun', note: 'Truck arrived at Safety Gate.' },
+          { time: minsAgoStr(4), dept: 'QHSSE / Safety', user: 'Engr. Amina Yusuf', note: 'Cleared safety check, uploaded PTL_KJA702AA_Verified.pdf & sent to Inventory.' }
+        ]
+      },
+      {
+        truckId: 'ABJ-905-TR',
+        driver: 'Segun Ogunleye',
+        transporter: 'Conoil Fleet Partners',
+        product: 'AGO (Diesel)',
+        volume: '33,000 L',
+        stage: 'AWAITING_WAYBILL',
+        ptlNumber: 'PTL-2026-4405',
+        salesOrder: 'SO-AP-88201',
+        ticketNumber: 'TKT-2026-9901',
+        bay: 'Bay 2',
+        waybillNumber: '',
+        docs: {
+          ptl: createSeedDoc('PTL_ABJ905TR_Signed.pdf', 'Permit to Load (PTL-2026-4405)', 'Truck: ABJ-905-TR | Driver: Segun Ogunleye | AGO 33,000 L'),
+          ticket: createSeedDoc('LoadingTicket_TKT9901.pdf', 'Loading Ticket (TKT-2026-9901)', 'Truck: ABJ-905-TR | Bay 2 | SO-AP-88201'),
+          waybill: null
+        },
+        durations: { qhsse: 6, invTicket: 4, loadingWaybill: 16 },
+        timestamps: { gateIn: minsAgoStr(26), qhsseSent: minsAgoStr(20), ticketIssued: minsAgoStr(16), waybillReleased: null },
+        auditTrail: [
+          { time: minsAgoStr(26), dept: 'Gate Security', user: 'S. Balogun', note: 'Truck arrived at Safety Gate.' },
+          { time: minsAgoStr(20), dept: 'QHSSE / Safety', user: 'Engr. Amina Yusuf', note: 'Issued PTL-2026-4405 and sent to Inventory.' },
+          { time: minsAgoStr(16), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Generated Loading Ticket TKT-2026-9901 (Bay 2) & moved directly to Ready for Waybill.' }
+        ]
+      },
+      {
+        truckId: 'IKD-514-GH',
+        driver: 'Suleiman Bello',
+        transporter: 'TotalEnergies Haulage',
+        product: 'PMS (Petrol)',
+        volume: '40,000 L',
+        stage: 'COMPLETED',
+        ptlNumber: 'PTL-2026-4390',
+        salesOrder: 'SO-AP-88182',
+        ticketNumber: 'TKT-2026-9884',
+        bay: 'Bay 3',
+        waybillNumber: 'WB-2026-7708',
+        // Fully compliant closed job (all 3 docs uploaded)
+        docs: {
+          ptl: createSeedDoc('PTL_IKD514GH_Signed.pdf', 'Permit to Load (PTL-2026-4390)', 'Truck: IKD-514-GH | PMS 40,000 L'),
+          ticket: createSeedDoc('LoadingTicket_TKT9884.pdf', 'Loading Ticket (TKT-2026-9884)', 'Truck: IKD-514-GH | Bay 3'),
+          waybill: createSeedDoc('Waybill_WB7708_Official.pdf', 'Official Waybill (WB-2026-7708)', 'Truck: IKD-514-GH | PMS 40,000 L')
+        },
+        durations: { qhsse: 6, invTicket: 4, loadingWaybill: 20 },
+        timestamps: { gateIn: minsAgoStr(65), qhsseSent: minsAgoStr(59), ticketIssued: minsAgoStr(55), waybillReleased: minsAgoStr(35) },
+        auditTrail: [
+          { time: minsAgoStr(65), dept: 'Gate Security', user: 'S. Balogun', note: 'Truck arrived at Safety Gate.' },
+          { time: minsAgoStr(59), dept: 'QHSSE / Safety', user: 'Engr. Amina Yusuf', note: 'Issued PTL-2026-4390 with verified PTL scan.' },
+          { time: minsAgoStr(55), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Generated Loading Ticket TKT-2026-9884 with scan.' },
+          { time: minsAgoStr(35), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Issued Official Waybill WB-2026-7708 & closed dispatch (100% Audit Compliant).' }
+        ]
+      },
+      {
+        truckId: 'FKJ-332-LM',
+        driver: 'Emeka Eze',
+        transporter: 'Ardova Logistics',
+        product: 'ATK (Aviation)',
+        volume: '45,000 L',
+        stage: 'COMPLETED',
+        ptlNumber: 'PTL-2026-4399',
+        salesOrder: 'SO-AP-88194',
+        ticketNumber: 'TKT-2026-9895',
+        bay: 'Bay 1',
+        waybillNumber: 'WB-2026-7715',
+        // Closed out missing Waybill ONLY (Inventory fault; QHSSE sees green!)
+        docs: {
+          ptl: createSeedDoc('PTL_FKJ332LM_Signed.pdf', 'Permit to Load (PTL-2026-4399)', 'Truck: FKJ-332-LM | ATK 45,000 L'),
+          ticket: createSeedDoc('LoadingTicket_TKT9895.pdf', 'Loading Ticket (TKT-2026-9895)', 'Truck: FKJ-332-LM | Bay 1'),
+          waybill: null
+        },
+        durations: { qhsse: 7, invTicket: 5, loadingWaybill: 22 },
+        timestamps: { gateIn: minsAgoStr(40), qhsseSent: minsAgoStr(33), ticketIssued: minsAgoStr(28), waybillReleased: minsAgoStr(6) },
+        auditTrail: [
+          { time: minsAgoStr(40), dept: 'Gate Security', user: 'S. Balogun', note: 'Truck arrived at Safety Gate.' },
+          { time: minsAgoStr(33), dept: 'QHSSE / Safety', user: 'Engr. Amina Yusuf', note: 'Issued PTL-2026-4399 & uploaded PTL scan.' },
+          { time: minsAgoStr(28), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Generated Loading Ticket TKT-2026-9895 (Bay 1).' },
+          { time: minsAgoStr(6), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Closed out job & issued Waybill WB-2026-7715 without scanned Waybill upload (Inventory fault flagged).' }
+        ]
+      },
+      {
+        truckId: 'LND-880-QR',
+        driver: 'Babajide Adewale',
+        transporter: 'Ardova Haulage Fleet',
+        product: 'PMS (Petrol)',
+        volume: '45,000 L',
+        stage: 'COMPLETED',
+        ptlNumber: 'PTL-2026-4381',
+        salesOrder: 'SO-AP-88170',
+        ticketNumber: 'TKT-2026-9874',
+        bay: 'Bay 2',
+        waybillNumber: 'WB-2026-7710',
+        // Closed out missing PTL ONLY (QHSSE fault; Inventory sees green!)
+        docs: {
+          ptl: null,
+          ticket: createSeedDoc('LoadingTicket_TKT9874.pdf', 'Loading Ticket (TKT-2026-9874)', 'Truck: LND-880-QR | Bay 2'),
+          waybill: createSeedDoc('Waybill_WB7710_Official.pdf', 'Official Waybill (WB-2026-7710)', 'Truck: LND-880-QR | PMS 45,000 L')
+        },
+        durations: { qhsse: 7, invTicket: 4, loadingWaybill: 24 },
+        timestamps: { gateIn: minsAgoStr(50), qhsseSent: minsAgoStr(43), ticketIssued: minsAgoStr(39), waybillReleased: minsAgoStr(15) },
+        auditTrail: [
+          { time: minsAgoStr(50), dept: 'Gate Security', user: 'S. Balogun', note: 'Truck arrived at Safety Gate.' },
+          { time: minsAgoStr(43), dept: 'QHSSE / Safety', user: 'Engr. Amina Yusuf', note: 'Issued PTL-2026-4381 (PTL scan deferred — QHSSE upload pending).' },
+          { time: minsAgoStr(39), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Generated Ticket TKT-2026-9874 with scan.' },
+          { time: minsAgoStr(15), dept: 'Inventory', user: 'Tunde Adeyemi', note: 'Issued Waybill WB-2026-7710 with scan & closed dispatch.' }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // STRICTLY DEPARTMENT-SCOPED DOCUMENT & FAULT EVALUATION HELPERS
+    // =========================================================================
+    function getDeptMissingDocs(truck, roleId) {
+      const missing = [];
+      if (roleId === 'qhsse') {
+        // QHSSE is ONLY responsible for Permit to Load (PTL) once truck has been cleared by QHSSE
+        if (truck.stage !== 'AWAITING_QHSSE' && !truck.docs.ptl) {
+          missing.push('PTL');
+        }
+      } else if (roleId === 'inventory') {
+        // Inventory is ONLY responsible for Loading Ticket (once ticketed) and Waybill (once completed)
+        if ((truck.stage === 'AWAITING_WAYBILL' || truck.stage === 'COMPLETED') && !truck.docs.ticket) {
+          missing.push('Loading Ticket');
+        }
+        if (truck.stage === 'COMPLETED' && !truck.docs.waybill) {
+          missing.push('Waybill');
+        }
+      } else {
+        // Management sees ALL missing required documents across departments
+        if (truck.stage !== 'AWAITING_QHSSE' && !truck.docs.ptl) missing.push('PTL');
+        if ((truck.stage === 'AWAITING_WAYBILL' || truck.stage === 'COMPLETED') && !truck.docs.ticket) missing.push('Loading Ticket');
+        if (truck.stage === 'COMPLETED' && !truck.docs.waybill) missing.push('Waybill');
+      }
+      return missing;
+    }
+
+    function getFaultingDepartments(truck) {
+      const faults = [];
+      if (truck.stage !== 'AWAITING_QHSSE' && !truck.docs.ptl) {
+        faults.push('Fault: QHSSE (Missing PTL)');
+      }
+      const invMissing = [];
+      if ((truck.stage === 'AWAITING_WAYBILL' || truck.stage === 'COMPLETED') && !truck.docs.ticket) {
+        invMissing.push('Ticket');
+      }
+      if (truck.stage === 'COMPLETED' && !truck.docs.waybill) {
+        invMissing.push('Waybill');
+      }
+      if (invMissing.length > 0) {
+        faults.push(`Fault: Inventory (Missing ${invMissing.join(' & ')})`);
+      }
+      return faults;
+    }
+
+    // Legacy alias used by Management global views
+    function getMissingDocs(truck) {
+      return getDeptMissingDocs(truck, 'management');
+    }
+
+    // =========================================================================
+    // AUTHENTICATION & NAVIGATION HANDLERS
+    // =========================================================================
+    function loginAs(roleId) {
+      const role = ROLES[roleId];
+      if (!role) return;
+      currentRole = role;
+      currentTab = role.tabs[0].id;
+      selectedTruckId = null;
+      pendingUploadFiles = {};
+
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('workspace-shell').classList.remove('hidden');
+
+      document.getElementById('header-dept-subtitle').textContent = role.shortTitle;
+      document.getElementById('quick-role-select').value = roleId;
+      document.getElementById('header-avatar').textContent = role.avatar;
+      document.getElementById('header-avatar').className = `w-7 h-7 rounded-full ${role.avatarBg} text-white font-bold text-xs flex items-center justify-center`;
+      document.getElementById('header-user-name').textContent = role.user.split(' ')[0] + ' ' + role.user.split(' ')[1];
+      document.getElementById('sidebar-compose-label').textContent = role.composeLabel;
+
+      renderSidebar();
+      renderWorkspace();
+      showToast(`Signed in: ${role.title}`, `Logged in as ${role.user}`);
+    }
+
+    function showLoginScreen() {
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('workspace-shell').classList.add('hidden');
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('left-sidebar');
+      sidebarOpen = !sidebarOpen;
+      sb.classList.toggle('hidden', !sidebarOpen);
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      selectedTruckId = null;
+      pendingUploadFiles = {};
+      renderSidebar();
+      renderWorkspace();
+    }
+
+    function triggerPrimaryComposeAction() {
+      if (!currentRole) return;
+      if (currentRole.id === 'qhsse') {
+        switchTab('qhsse_clear');
+        const input = document.getElementById('qhsse-truck-id');
+        if (input) input.focus();
+      } else if (currentRole.id === 'inventory') {
+        const readyWaybill = depotTrucks.filter(t => t.stage === 'AWAITING_WAYBILL').length;
+        switchTab(readyWaybill > 0 ? 'inv_waybill' : 'inv_inbox');
+      } else if (currentRole.id === 'management') {
+        docFilterMode = 'missing';
+        switchTab('doc_uploads');
+        showToast('Audit Filter Applied', 'Showing jobs missing required audit document uploads.');
+      }
+    }
+
+    function handleGlobalSearch() {
+      searchQuery = document.getElementById('global-search-input').value.trim().toLowerCase();
+      document.getElementById('clear-search-btn').classList.toggle('hidden', !searchQuery);
+      renderWorkspace();
+    }
+
+    function clearGlobalSearch() {
+      document.getElementById('global-search-input').value = '';
+      searchQuery = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      renderWorkspace();
+    }
+
+    // =========================================================================
+    // SIDEBAR RENDERING (GMAIL TABS + DEPARTMENT-SCOPED BADGES + STAGE LABELS)
+    // =========================================================================
+    function getTabCount(tabId) {
+      const roleId = currentRole ? currentRole.id : 'management';
+      switch (tabId) {
+        case 'qhsse_clear': return depotTrucks.filter(t => t.stage === 'AWAITING_QHSSE').length;
+        case 'qhsse_sent': return depotTrucks.filter(t => t.stage !== 'AWAITING_QHSSE').length;
+        case 'inv_inbox': return depotTrucks.filter(t => t.stage === 'AWAITING_TICKET').length;
+        case 'inv_waybill': return depotTrucks.filter(t => t.stage === 'AWAITING_WAYBILL').length;
+        case 'inv_issued': return depotTrucks.filter(t => t.stage === 'COMPLETED').length;
+        case 'mgmt_tracker': return depotTrucks.length;
+        case 'doc_uploads': return depotTrucks.filter(t => getDeptMissingDocs(t, roleId).length > 0).length;
+        default: return 0;
+      }
+    }
+
+    function getNavIcon(type) {
+      if (type === 'inbox') {
+        return `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>`;
+      }
+      if (type === 'sent') {
+        return `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>`;
+      }
+      if (type === 'starred') {
+        return `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>`;
+      }
+      if (type === 'upload') {
+        return `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>`;
+      }
+      if (type === 'chart') {
+        return `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`;
+      }
+      return `<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>`;
+    }
+
+    function renderSidebar() {
+      if (!currentRole) return;
+      const roleId = currentRole.id;
+      const navList = document.getElementById('sidebar-nav-list');
+      navList.innerHTML = currentRole.tabs.map(tab => {
+        const isActive = tab.id === currentTab;
+        const count = getTabCount(tab.id);
+        const isDocTab = tab.id === 'doc_uploads';
+        return `
+          <button onclick="switchTab('${tab.id}')"
+            class="w-full flex items-center justify-between pl-4 pr-3 py-2 rounded-r-full text-xs sm:text-[13px] transition-colors cursor-pointer ${
+              isActive
+                ? 'bg-[#d3e3fd] text-[#041e49] font-bold'
+                : 'text-slate-700 hover:bg-[#eaebef] font-medium'
+            }">
+            <div class="flex items-center gap-3 truncate">
+              ${getNavIcon(tab.icon)}
+              <span class="truncate">${tab.label}</span>
+            </div>
+            ${count > 0 ? `<span class="text-xs px-1.5 py-0.5 rounded-full ${
+              isDocTab ? 'bg-rose-100 text-rose-700 font-bold' : (isActive ? 'font-extrabold text-[#041e49]' : 'font-semibold text-slate-600')
+            } ml-2">${count}</span>` : ''}
+          </button>
+        `;
+      }).join('');
+
+      const deptMissingCount = depotTrucks.filter(t => getDeptMissingDocs(t, roleId).length > 0).length;
+      const missingLabelName = roleId === 'qhsse'
+        ? 'Missing QHSSE PTLs'
+        : roleId === 'inventory'
+          ? 'Missing Inv. Docs'
+          : 'Audit Missing Docs';
+
+      const labelsList = document.getElementById('sidebar-labels-list');
+      const stageCounts = [
+        { name: 'Pending QHSSE', color: 'bg-amber-500', count: depotTrucks.filter(t => t.stage === 'AWAITING_QHSSE').length },
+        { name: 'Inventory Inbox', color: 'bg-blue-500', count: depotTrucks.filter(t => t.stage === 'AWAITING_TICKET').length },
+        { name: 'Ready for Waybill', color: 'bg-purple-500', count: depotTrucks.filter(t => t.stage === 'AWAITING_WAYBILL').length },
+        { name: 'Closed & Released', color: 'bg-emerald-600', count: depotTrucks.filter(t => t.stage === 'COMPLETED').length },
+        { name: missingLabelName, color: deptMissingCount > 0 ? 'bg-rose-600' : 'bg-emerald-500', count: deptMissingCount, isAlert: true }
+      ];
+
+      labelsList.innerHTML = stageCounts.map(st => `
+        <div class="flex items-center justify-between py-1 text-slate-600">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-xs ${st.color}"></span>
+            <span>${st.name}</span>
+          </div>
+          <span class="font-mono text-[11px] font-semibold ${st.isAlert && st.count > 0 ? 'text-rose-600 font-bold' : 'text-slate-500'}">${st.count}</span>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // MAIN WORKSPACE ROUTER
+    // =========================================================================
+    function filterBySearch(list) {
+      if (!searchQuery) return list;
+      return list.filter(t =>
+        t.truckId.toLowerCase().includes(searchQuery) ||
+        t.driver.toLowerCase().includes(searchQuery) ||
+        t.transporter.toLowerCase().includes(searchQuery) ||
+        t.ptlNumber.toLowerCase().includes(searchQuery) ||
+        t.ticketNumber.toLowerCase().includes(searchQuery) ||
+        t.waybillNumber.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    function renderWorkspace() {
+      if (!currentRole || !currentTab) return;
+      const activeTabObj = currentRole.tabs.find(t => t.id === currentTab);
+      document.getElementById('workspace-breadcrumb').textContent = `${currentRole.title}  ›  ${activeTabObj ? activeTabObj.label : ''}`;
+
+      const container = document.getElementById('workspace-content');
+
+      if (currentTab === 'doc_uploads') {
+        renderDocumentUploadsTab(container);
+        return;
+      }
+
+      if (currentRole.id === 'qhsse') {
+        renderQhsseWorkspace(container);
+      } else if (currentRole.id === 'inventory') {
+        renderInventoryWorkspace(container);
+      } else if (currentRole.id === 'management') {
+        renderManagementWorkspace(container);
+      }
+    }
+
+    // =========================================================================
+    // DEDICATED TAB IN ALL DEPARTMENTS: DOCUMENT UPLOADS (DEPARTMENT-SCOPED)
+    // =========================================================================
+    function renderDocumentUploadsTab(container) {
+      const roleId = currentRole.id;
+      // Show trucks relevant to this department's stage progression
+      let baseTrucks = depotTrucks;
+      if (roleId === 'qhsse') {
+        baseTrucks = depotTrucks.filter(t => t.stage !== 'AWAITING_QHSSE');
+      } else if (roleId === 'inventory') {
+        baseTrucks = depotTrucks.filter(t => t.stage === 'AWAITING_WAYBILL' || t.stage === 'COMPLETED');
+      }
+
+      let list = filterBySearch(baseTrucks);
+      if (docFilterMode === 'missing') {
+        list = list.filter(t => getDeptMissingDocs(t, roleId).length > 0);
+      } else if (docFilterMode === 'complete') {
+        list = list.filter(t => getDeptMissingDocs(t, roleId).length === 0);
+      }
+
+      const deptMissingTotal = baseTrucks.filter(t => getDeptMissingDocs(t, roleId).length > 0).length;
+      const deptCompleteTotal = baseTrucks.filter(t => getDeptMissingDocs(t, roleId).length === 0).length;
+
+      const deptSubtitle = roleId === 'qhsse'
+        ? 'Showing ONLY QHSSE Safety documents (Permit to Load). Inventory tickets/waybills do not affect QHSSE compliance status.'
+        : roleId === 'inventory'
+          ? 'Showing ONLY Inventory & Billing documents (Loading Tickets & Waybills). Safety PTLs do not affect Inventory compliance status.'
+          : 'Executive Cross-Departmental Audit View: Inspect all PTLs, Loading Tickets & Waybills and identify faulting departments.';
+
+      container.innerHTML = `
+        <div class="p-5 sm:p-6 space-y-5">
+          <!-- Header & Filter Pills -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#e0e4eb] pb-4">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#006838]">${currentRole.title} — Document Compliance</span>
+              <h2 class="text-base sm:text-lg font-bold text-slate-900">
+                ${roleId === 'qhsse' ? 'Permit to Load (PTL) Uploads' : roleId === 'inventory' ? 'Loading Ticket & Waybill Uploads' : 'Global Audit Document Repository'}
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">${deptSubtitle}</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="setDocFilter('all')"
+                class="px-3.5 py-1.5 rounded-full text-xs font-semibold border cursor-pointer ${docFilterMode === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-[#e0e4eb] hover:bg-[#f6f8fc]'}">
+                All (${baseTrucks.length})
+              </button>
+              <button onclick="setDocFilter('missing')"
+                class="px-3.5 py-1.5 rounded-full text-xs font-semibold border cursor-pointer ${docFilterMode === 'missing' ? 'bg-rose-600 text-white border-rose-600' : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'}">
+                ${roleId === 'qhsse' ? 'Missing PTLs' : roleId === 'inventory' ? 'Missing Inv. Docs' : 'Missing Audits'} (${deptMissingTotal})
+              </button>
+              <button onclick="setDocFilter('complete')"
+                class="px-3.5 py-1.5 rounded-full text-xs font-semibold border cursor-pointer ${docFilterMode === 'complete' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'}">
+                ${roleId === 'management' ? 'Audit Complete' : 'Dept. Compliant'} (${deptCompleteTotal})
+              </button>
+            </div>
+          </div>
+
+          ${deptMissingTotal > 0 ? `
+            <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between gap-3 text-xs text-rose-900">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-[10px] uppercase">
+                  ${roleId === 'management' ? 'Global Audit Alert' : `${currentRole.shortTitle} Action`}
+                </span>
+                <span>
+                  ${roleId === 'qhsse'
+                    ? `<strong>${deptMissingTotal} cleared truck(s)</strong> are missing a scanned Permit to Load (PTL) from QHSSE. Upload from your laptop below.`
+                    : roleId === 'inventory'
+                      ? `<strong>${deptMissingTotal} dispatched truck(s)</strong> are missing Inventory scans (Loading Ticket or Waybill). Upload from your laptop below.`
+                      : `<strong>${deptMissingTotal} job(s)</strong> across the depot have missing audit scans. Faulting departments are tagged below.`
+                  }
+                </span>
+              </div>
+            </div>
+          ` : `
+            <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-xs text-emerald-900 font-semibold">
+              <span class="px-2 py-0.5 rounded bg-emerald-700 text-white font-bold text-[10px] uppercase">Compliant</span>
+              <span>All required documents for ${currentRole.title} are uploaded and verified.</span>
+            </div>
+          `}
+
+          <!-- Truck Document Upload Cards (Scoped to Active Department) -->
+          <div class="space-y-4">
+            ${list.length === 0 ? `
+              <div class="p-10 text-center rounded-2xl border border-dashed border-[#e0e4eb] text-xs text-slate-500">
+                No trucks match the selected filter in ${currentRole.title}.
+              </div>
+            ` : list.map(t => {
+              const isClosed = t.stage === 'COMPLETED';
+              const deptMissing = getDeptMissingDocs(t, roleId);
+              const isDeptCompliant = deptMissing.length === 0;
+              const faults = getFaultingDepartments(t);
+
+              // Determine which upload slots belong to the logged-in department
+              let slotsHtml = '';
+              if (roleId === 'qhsse') {
+                slotsHtml = `
+                  <div class="grid grid-cols-1 gap-3.5 text-xs">
+                    ${renderDocUploadSlot(t, 'ptl', 'QHSSE Permit to Load (PTL)', t.ptlNumber || 'PTL-PENDING', t.docs.ptl)}
+                  </div>
+                `;
+              } else if (roleId === 'inventory') {
+                slotsHtml = `
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+                    ${renderDocUploadSlot(t, 'ticket', '1. Inventory Loading Ticket', t.ticketNumber || 'TKT-PENDING', t.docs.ticket)}
+                    ${renderDocUploadSlot(t, 'waybill', '2. Inventory Official Waybill', t.waybillNumber || 'WB-PENDING', t.docs.waybill)}
+                  </div>
+                `;
+              } else {
+                slotsHtml = `
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+                    ${renderDocUploadSlot(t, 'ptl', '1. QHSSE Permit to Load (PTL)', t.ptlNumber || 'PTL-PENDING', t.docs.ptl)}
+                    ${renderDocUploadSlot(t, 'ticket', '2. Inventory Loading Ticket', t.ticketNumber || 'TKT-PENDING', t.docs.ticket)}
+                    ${renderDocUploadSlot(t, 'waybill', '3. Inventory Official Waybill', t.waybillNumber || 'WB-PENDING', t.docs.waybill)}
+                  </div>
+                `;
+              }
+
+              return `
+                <div class="rounded-2xl border ${!isDeptCompliant ? 'border-rose-300 bg-rose-50/20' : 'border-[#e0e4eb] bg-[#f6f8fc]/50'} p-4 sm:p-5 space-y-4">
+                  <!-- Top Metadata Row -->
+                  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#e0e4eb] pb-3">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                      <span class="font-mono font-extrabold text-base text-slate-900">${t.truckId}</span>
+                      <span class="text-xs text-slate-600">${t.driver} • <strong>${t.product} (${t.volume})</strong></span>
+                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isClosed ? 'bg-slate-800 text-white' : 'bg-blue-100 text-blue-800'}">
+                        ${formatStageLabel(t.stage)}
+                      </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                      ${isDeptCompliant ? `
+                        <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+                          ✓ ${roleId === 'qhsse' ? 'PTL Uploaded (Safety Compliant)' : roleId === 'inventory' ? 'Inventory Docs Uploaded' : 'Audit Complete (3/3 Docs)'}
+                        </span>
+                      ` : `
+                        <span class="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold">
+                          ⚠ ${roleId === 'management' ? faults.join(' | ') : `Missing: ${deptMissing.join(', ')}`}
+                        </span>
+                      `}
+                      <button onclick="openDocModal('${t.truckId}')" class="text-xs font-semibold text-slate-600 hover:underline ml-1 cursor-pointer">Audit Log</button>
+                    </div>
+                  </div>
+
+                  ${slotsHtml}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDocUploadSlot(truck, docKey, title, refCode, docObj) {
+      const inputId = `file-upload-${truck.truckId}-${docKey}`;
+      return `
+        <div class="p-3.5 rounded-xl bg-white border ${docObj ? 'border-emerald-200' : 'border-dashed border-rose-300'} flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-800">${title}</span>
+              <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${refCode}</span>
+            </div>
+
+            ${docObj ? `
+              <div class="mt-2 p-2 rounded-lg bg-emerald-50/70 border border-emerald-100 space-y-1">
+                <div class="font-mono text-[11px] font-semibold text-emerald-900 truncate" title="${docObj.name}">📄 ${docObj.name}</div>
+                <div class="text-[10px] text-slate-500">${docObj.size} • ${docObj.uploadedAt}</div>
+                <a href="${docObj.url}" target="_blank" rel="noopener noreferrer"
+                  class="inline-block mt-1 text-[11px] font-bold text-blue-700 hover:underline">
+                  ↗ Preview / Open Uploaded File
+                </a>
+              </div>
+            ` : `
+              <div class="mt-2 p-2.5 rounded-lg bg-rose-50/60 text-rose-700 text-[11px] font-medium">
+                No file uploaded yet. Upload scan from your laptop below.
+              </div>
+            `}
+          </div>
+
+          <div>
+            <input type="file" id="${inputId}" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" class="hidden"
+              onchange="uploadLateDocumentFromLaptop('${truck.truckId}', '${docKey}', this)" />
+            <label for="${inputId}"
+              class="w-full py-2 px-3 rounded-full text-center font-bold text-xs block cursor-pointer transition-colors ${
+                docObj
+                  ? 'bg-[#f6f8fc] hover:bg-[#eaf1fb] text-slate-700 border border-[#e0e4eb]'
+                  : 'bg-[#006838] hover:bg-[#004d29] text-white shadow-2xs'
+              }">
+              ${docObj ? 'Replace File from Laptop' : '⬆ Choose File from Laptop'}
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    function setDocFilter(mode) {
+      docFilterMode = mode;
+      renderWorkspace();
+    }
+
+    function handleFormFilePick(key, inputEl, labelId) {
+      const file = inputEl.files && inputEl.files[0];
+      const labelEl = document.getElementById(labelId);
+      if (!file) {
+        delete pendingUploadFiles[key];
+        if (labelEl) {
+          labelEl.textContent = 'No file chosen (click to select from computer)';
+          labelEl.classList.remove('text-emerald-700', 'font-bold');
+        }
+        return;
+      }
+      pendingUploadFiles[key] = file;
+      if (labelEl) {
+        labelEl.textContent = `✓ ${file.name} (${formatBytes(file.size)})`;
+        labelEl.classList.add('text-emerald-700', 'font-bold');
+      }
+    }
+
+    function uploadLateDocumentFromLaptop(truckId, docKey, inputEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      const truck = depotTrucks.find(t => t.truckId === truckId);
+      if (!truck) return;
+
+      const labelMap = { ptl: 'Permit to Load (PTL)', ticket: 'Loading Ticket', waybill: 'Official Waybill' };
+      const now = minsAgoStr(0);
+
+      // Ensure reference number exists if uploaded post-closure
+      if (docKey === 'ptl' && !truck.ptlNumber) truck.ptlNumber = 'PTL-2026-' + Math.floor(4450 + Math.random() * 400);
+      if (docKey === 'ticket' && !truck.ticketNumber) truck.ticketNumber = 'TKT-2026-' + Math.floor(9930 + Math.random() * 60);
+      if (docKey === 'waybill' && !truck.waybillNumber) truck.waybillNumber = 'WB-2026-' + Math.floor(7740 + Math.random() * 400);
+
+      truck.docs[docKey] = buildDocRecord(file, currentRole.title, currentRole.user);
+      truck.auditTrail.push({
+        time: now,
+        dept: currentRole.title,
+        user: currentRole.user,
+        note: `Uploaded ${labelMap[docKey]} file "${file.name}" (${formatBytes(file.size)}) from laptop (${truck.stage === 'COMPLETED' ? 'Post-Closure Audit Update' : 'Active Stage Upload'}).`
+      });
+
+      renderSidebar();
+      renderWorkspace();
+      showToast('File Uploaded & Synced', `"${file.name}" attached to ${truckId} and reflected on Management Dashboard.`);
+    }
+
+    // =========================================================================
+    // DEPARTMENT 1: QHSSE / SAFETY WORKSPACE
+    // =========================================================================
+    function renderQhsseWorkspace(container) {
+      if (currentTab === 'qhsse_clear') {
+        const pending = filterBySearch(depotTrucks.filter(t => t.stage === 'AWAITING_QHSSE'));
+        container.innerHTML = `
+          <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left: Focused Clearance & Real PTL Upload Form -->
+            <div class="lg:col-span-6 bg-[#f6f8fc] rounded-2xl p-5 border border-[#e0e4eb] space-y-4">
+              <div class="flex items-center justify-between border-b border-[#e0e4eb] pb-3">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-[#006838]">QHSSE Safety Clearance</span>
+                  <h2 class="text-base sm:text-lg font-bold text-slate-900">Clear Truck & Send PTL to Inventory</h2>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">Stage 1</span>
+              </div>
+
+              <form onsubmit="submitQhsseClearance(event)" class="space-y-3.5 text-xs sm:text-sm">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Select Arrived Truck or Type Truck ID *</label>
+                  <div class="flex gap-2">
+                    <input type="text" id="qhsse-truck-id" required placeholder="e.g. LAG-419-XY"
+                      value="${pending[0] ? pending[0].truckId : ''}"
+                      class="flex-1 rounded-xl border border-[#e0e4eb] bg-white px-3.5 py-2.5 font-mono uppercase font-bold text-slate-900 focus:outline-none focus:border-[#006838]" />
+                    ${pending.length > 0 ? `
+                      <select onchange="prefillQhsseTruck(this.value)" class="rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 text-xs font-medium text-slate-700">
+                        ${pending.map(t => `<option value="${t.truckId}">${t.truckId}</option>`).join('')}
+                      </select>
+                    ` : ''}
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Driver Name *</label>
+                    <input type="text" id="qhsse-driver" required value="${pending[0] ? pending[0].driver : 'Haruna Yakubu'}"
+                      class="w-full rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-[#006838]" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Transporter *</label>
+                    <input type="text" id="qhsse-transporter" required value="${pending[0] ? pending[0].transporter : 'Ardova Haulage Fleet'}"
+                      class="w-full rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-[#006838]" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Permit to Load No. *</label>
+                    <input type="text" id="qhsse-ptl-num" required value="PTL-2026-${Math.floor(4420 + Math.random() * 500)}"
+                      class="w-full rounded-xl border border-[#e0e4eb] bg-emerald-50/60 px-3 py-2 font-mono text-xs font-bold text-emerald-900 focus:outline-none focus:border-[#006838]" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Product *</label>
+                    <select id="qhsse-product" class="w-full rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 text-xs">
+                      <option value="PMS (Petrol)" ${pending[0]?.product === 'PMS (Petrol)' ? 'selected' : ''}>PMS (Petrol)</option>
+                      <option value="AGO (Diesel)" ${pending[0]?.product === 'AGO (Diesel)' ? 'selected' : ''}>AGO (Diesel)</option>
+                      <option value="ATK (Aviation)" ${pending[0]?.product === 'ATK (Aviation)' ? 'selected' : ''}>ATK (Aviation)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Volume *</label>
+                    <select id="qhsse-volume" class="w-full rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 text-xs">
+                      <option value="33,000 L" ${pending[0]?.volume === '33,000 L' ? 'selected' : ''}>33,000 L</option>
+                      <option value="40,000 L" ${pending[0]?.volume === '40,000 L' ? 'selected' : ''}>40,000 L</option>
+                      <option value="45,000 L" ${pending[0]?.volume === '45,000 L' ? 'selected' : ''}>45,000 L</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-3 border border-[#e0e4eb] space-y-1.5 text-xs">
+                  <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                    <input type="checkbox" checked required class="rounded text-[#006838]" />
+                    <span>Spark arrestor, grounding strap & fire extinguishers verified</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                    <input type="checkbox" checked required class="rounded text-[#006838]" />
+                    <span>Tanker compartments & pressure valves certified safe</span>
+                  </label>
+                </div>
+
+                <!-- Real Laptop File Upload for Permit to Load (Optional now, or upload later in Document Uploads tab) -->
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs font-semibold text-slate-700">Upload Scanned Permit to Load from Laptop</label>
+                    <span class="text-[11px] text-slate-400">Optional now — can upload later</span>
+                  </div>
+                  <input type="file" id="qhsse-ptl-file-input" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="hidden"
+                    onchange="handleFormFilePick('qhssePtl', this, 'qhsse-upload-filename')" />
+                  <label for="qhsse-ptl-file-input"
+                    class="flex items-center justify-between px-4 py-3 rounded-xl border-2 border-dashed border-emerald-400 bg-white hover:bg-emerald-50/40 cursor-pointer transition-colors">
+                    <div class="flex items-center gap-2.5 text-xs truncate">
+                      <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-800 font-bold shrink-0">BROWSE LAPTOP</span>
+                      <span id="qhsse-upload-filename" class="font-medium text-slate-600 truncate">No file chosen (click to select from computer)</span>
+                    </div>
+                    <span class="text-xs font-bold text-[#006838] shrink-0 ml-2">Choose File</span>
+                  </label>
+                </div>
+
+                <button type="submit"
+                  class="w-full py-3 px-4 rounded-full bg-[#006838] hover:bg-[#004d29] text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span>Clear Truck & Send to Inventory</span>
+                  <span>→</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Right: Arrived Trucks Awaiting Safety Clearance -->
+            <div class="lg:col-span-6 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-800">Gate Queue Awaiting Safety Inspection (${pending.length})</h3>
+                <span class="text-[11px] text-slate-400">Click row to load into form</span>
+              </div>
+
+              ${pending.length === 0 ? `
+                <div class="p-8 rounded-2xl border border-dashed border-[#e0e4eb] text-center space-y-2">
+                  <p class="text-xs text-slate-500">All gate trucks have been cleared and transmitted to Inventory.</p>
+                  <button onclick="simulateNewGateTruck()" class="px-4 py-2 rounded-full bg-[#c2e7ff] text-[#001d35] text-xs font-bold cursor-pointer">+ Simulate Arriving Truck</button>
+                </div>
+              ` : `
+                <div class="divide-y divide-[#f1f3f4] border border-[#e0e4eb] rounded-2xl overflow-hidden bg-white">
+                  ${pending.map(t => `
+                    <div onclick="prefillQhsseTruck('${t.truckId}')"
+                      class="mail-row p-3.5 flex items-center justify-between gap-3 cursor-pointer bg-white transition-all">
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="font-mono font-bold text-sm text-slate-900">${t.truckId}</span>
+                          <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">At Gate • ${t.timestamps.gateIn}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 truncate mt-0.5">${t.driver} — ${t.transporter}</p>
+                        <p class="text-[11px] text-slate-400">${t.product} • ${t.volume}</p>
+                      </div>
+                      <span class="px-3 py-1.5 rounded-full bg-[#eaf1fb] text-[#041e49] text-xs font-semibold shrink-0">Inspect →</span>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      } else {
+        // Sent to Inventory (Strictly QHSSE PTL status — green if PTL uploaded!)
+        const list = filterBySearch(depotTrucks.filter(t => t.stage !== 'AWAITING_QHSSE'));
+        container.innerHTML = `
+          <div class="divide-y divide-[#f1f3f4]">
+            ${list.map(t => `
+              <div onclick="openDocModal('${t.truckId}')"
+                class="mail-row px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer bg-white">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-2.5 h-2.5 rounded-full ${t.docs.ptl ? 'bg-emerald-600' : 'bg-rose-500'} shrink-0"></span>
+                  <span class="font-mono font-bold text-xs sm:text-sm text-slate-900 w-28 shrink-0">${t.truckId}</span>
+                  <div class="truncate text-xs text-slate-700">
+                    <span class="font-semibold">Sent to Inventory</span> — ${t.driver} (${t.product}, ${t.volume})
+                    ${t.docs.ptl
+                      ? `<span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-[11px] font-mono text-emerald-800">✓ PTL Uploaded: ${t.docs.ptl.name}</span>`
+                      : `<span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[11px] font-semibold text-rose-700">⚠ QHSSE PTL Scan Missing</span>`
+                    }
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 shrink-0 text-xs">
+                  <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium text-[11px]">${formatStageLabel(t.stage)}</span>
+                  <span class="font-mono text-slate-500 font-semibold">${t.timestamps.qhsseSent || t.timestamps.gateIn}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    function prefillQhsseTruck(truckId) {
+      const t = depotTrucks.find(x => x.truckId === truckId);
+      if (!t) return;
+      document.getElementById('qhsse-truck-id').value = t.truckId;
+      document.getElementById('qhsse-driver').value = t.driver;
+      document.getElementById('qhsse-transporter').value = t.transporter;
+      document.getElementById('qhsse-product').value = t.product;
+      document.getElementById('qhsse-volume').value = t.volume;
+    }
+
+    function submitQhsseClearance(e) {
+      e.preventDefault();
+      const truckId = document.getElementById('qhsse-truck-id').value.trim().toUpperCase();
+      const driver = document.getElementById('qhsse-driver').value.trim();
+      const transporter = document.getElementById('qhsse-transporter').value.trim();
+      const ptlNumber = document.getElementById('qhsse-ptl-num').value.trim().toUpperCase();
+      const product = document.getElementById('qhsse-product').value;
+      const volume = document.getElementById('qhsse-volume').value;
+      const selectedFile = pendingUploadFiles.qhssePtl || null;
+      const now = minsAgoStr(0);
+
+      let truck = depotTrucks.find(t => t.truckId === truckId);
+      const docObj = selectedFile ? buildDocRecord(selectedFile, 'QHSSE / Safety', currentRole.user) : null;
+
+      if (truck) {
+        truck.driver = driver;
+        truck.transporter = transporter;
+        truck.product = product;
+        truck.volume = volume;
+        truck.ptlNumber = ptlNumber;
+        if (docObj) truck.docs.ptl = docObj;
+        truck.stage = 'AWAITING_TICKET';
+        truck.timestamps.qhsseSent = now;
+        truck.durations.qhsse = Math.max(5, truck.durations.qhsse);
+        truck.auditTrail.push({
+          time: now,
+          dept: 'QHSSE / Safety',
+          user: currentRole.user,
+          note: docObj
+            ? `Cleared truck ${truckId}, uploaded Permit to Load "${docObj.name}" (${ptlNumber}) & sent directly to Inventory.`
+            : `Cleared truck ${truckId} (${ptlNumber}) & sent to Inventory. (PTL scan deferred — pending upload in Document Uploads tab).`
+        });
+      } else {
+        truck = {
+          truckId,
+          driver,
+          transporter,
+          product,
+          volume,
+          stage: 'AWAITING_TICKET',
+          ptlNumber,
+          salesOrder: 'SO-AP-' + Math.floor(88230 + Math.random() * 600),
+          ticketNumber: '',
+          bay: '',
+          waybillNumber: '',
+          docs: { ptl: docObj, ticket: null, waybill: null },
+          durations: { qhsse: 6, invTicket: 0, loadingWaybill: 0 },
+          timestamps: { gateIn: now, qhsseSent: now, ticketIssued: null, waybillReleased: null },
+          auditTrail: [
+            {
+              time: now,
+              dept: 'QHSSE / Safety',
+              user: currentRole.user,
+              note: docObj
+                ? `Logged & cleared ${truckId}, uploaded "${docObj.name}" (${ptlNumber}) & sent to Inventory.`
+                : `Logged & cleared ${truckId} (${ptlNumber}) & sent to Inventory (PTL upload pending).`
+            }
+          ]
+        };
+        depotTrucks.unshift(truck);
+      }
+
+      delete pendingUploadFiles.qhssePtl;
+      renderSidebar();
+      renderWorkspace();
+      showToast('Sent to Inventory Department', `Truck ${truckId} (${ptlNumber}) dispatched to Inventory Inbox!`);
+    }
+
+    // =========================================================================
+    // DEPARTMENT 2: INVENTORY & BILLING WORKSPACE (DIRECT TICKET -> WAYBILL)
+    // =========================================================================
+    function renderInventoryWorkspace(container) {
+      if (currentTab === 'inv_inbox') {
+        const inboxList = filterBySearch(depotTrucks.filter(t => t.stage === 'AWAITING_TICKET'));
+        if (!selectedTruckId && inboxList.length > 0) selectedTruckId = inboxList[0].truckId;
+        const activeTruck = inboxList.find(t => t.truckId === selectedTruckId) || inboxList[0];
+
+        if (inboxList.length === 0) {
+          container.innerHTML = `
+            <div class="p-12 text-center space-y-3">
+              <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto font-bold">✓</div>
+              <h3 class="text-base font-bold text-slate-900">Inventory Inbox Clear</h3>
+              <p class="text-xs text-slate-500 max-w-md mx-auto">All trucks cleared by QHSSE have been issued Loading Tickets and moved directly to the Ready for Waybill tab.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 h-full divide-y lg:divide-y-0 lg:divide-x divide-[#e0e4eb]">
+            <!-- Left Mail List (Inventory does NOT see red warnings for Safety's PTL) -->
+            <div class="lg:col-span-5 divide-y divide-[#f1f3f4] overflow-y-auto">
+              <div class="px-4 py-2.5 bg-[#f6f8fc] text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Cleared Trucks Received from Safety (${inboxList.length})
+              </div>
+              ${inboxList.map(t => `
+                <div onclick="selectInventoryTruck('${t.truckId}')"
+                  class="mail-row p-4 cursor-pointer transition-all ${activeTruck && activeTruck.truckId === t.truckId ? 'bg-[#eaf1fb]/80 border-l-4 border-l-blue-600' : 'bg-white'}">
+                  <div class="flex items-center justify-between">
+                    <span class="font-mono font-bold text-sm text-slate-900">${t.truckId}</span>
+                    <span class="text-[11px] font-mono text-slate-500">${t.timestamps.qhsseSent}</span>
+                  </div>
+                  <div class="text-xs font-semibold text-slate-700 mt-0.5">${t.driver} • ${t.product} (${t.volume})</div>
+                  <div class="mt-2 flex items-center gap-2">
+                    ${t.docs.ptl
+                      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">📎 ${t.docs.ptl.name}</span>`
+                      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">PTL Ref: ${t.ptlNumber} (Cleared by Safety)</span>`
+                    }
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Right Detail Action Pane: Generate Loading Ticket -> Moves Directly to Ready for Waybill -->
+            <div class="lg:col-span-7 p-5 sm:p-6 bg-white overflow-y-auto space-y-5">
+              ${activeTruck ? `
+                <div class="flex flex-wrap items-start justify-between gap-2 border-b border-[#e0e4eb] pb-4">
+                  <div>
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">Cleared by QHSSE at ${activeTruck.timestamps.qhsseSent}</span>
+                    <h2 class="text-xl font-extrabold font-mono text-slate-900 mt-1.5">${activeTruck.truckId} <span class="font-sans text-sm font-normal text-slate-500">(${activeTruck.transporter})</span></h2>
+                    <p class="text-xs text-slate-600 mt-0.5">Driver: <strong>${activeTruck.driver}</strong> • Product: <strong>${activeTruck.product} (${activeTruck.volume})</strong></p>
+                  </div>
+                  ${activeTruck.docs.ptl
+                    ? `<a href="${activeTruck.docs.ptl.url}" target="_blank" class="px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-xs font-semibold text-emerald-800">↗ Preview PTL File</a>`
+                    : `<span class="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600">PTL: ${activeTruck.ptlNumber}</span>`
+                  }
+                </div>
+
+                <form onsubmit="submitInventoryTicket(event, '${activeTruck.truckId}')" class="bg-[#f6f8fc] p-5 rounded-2xl border border-[#e0e4eb] space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900">Generate Loading Ticket (Direct to Ready for Waybill)</h3>
+                    <span class="text-[11px] font-semibold text-blue-700">Gantry Floor Shared View</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-700 mb-1">Sales Order (SO) *</label>
+                      <input type="text" id="inv-so-input" required value="${activeTruck.salesOrder}"
+                        class="w-full rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 font-mono text-xs font-bold focus:outline-none focus:border-blue-600" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-700 mb-1">Loading Ticket No. *</label>
+                      <input type="text" id="inv-ticket-input" required value="TKT-2026-${Math.floor(9910 + Math.random() * 80)}"
+                        class="w-full rounded-xl border border-[#e0e4eb] bg-blue-50/70 px-3 py-2 font-mono text-xs font-bold text-blue-900 focus:outline-none focus:border-blue-600" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-700 mb-1">Gantry Loading Bay *</label>
+                      <select id="inv-bay-input" class="w-full rounded-xl border border-[#e0e4eb] bg-white px-3 py-2 text-xs font-semibold">
+                        <option value="Bay 1">Gantry Bay 1</option>
+                        <option value="Bay 2">Gantry Bay 2</option>
+                        <option value="Bay 3">Gantry Bay 3</option>
+                        <option value="Bay 4">Gantry Bay 4</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Real Laptop File Picker for Loading Ticket -->
+                  <div>
+                    <div class="flex items-center justify-between mb-1">
+                      <label class="text-xs font-semibold text-slate-700">Upload Loading Ticket Scan from Laptop</label>
+                      <span class="text-[11px] text-slate-400">Optional now — can upload later</span>
+                    </div>
+                    <input type="file" id="inv-ticket-file-input" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="hidden"
+                      onchange="handleFormFilePick('invTicket', this, 'inv-ticket-filename')" />
+                    <label for="inv-ticket-file-input"
+                      class="flex items-center justify-between px-4 py-2.5 rounded-xl border-2 border-dashed border-blue-400 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
+                      <span id="inv-ticket-filename" class="text-xs font-medium text-slate-600 truncate">No file chosen (click to select Loading Ticket from laptop)</span>
+                      <span class="text-xs font-bold text-blue-700 shrink-0 ml-2">Choose File</span>
+                    </label>
+                  </div>
+
+                  <button type="submit"
+                    class="w-full py-3 px-5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer">
+                    Issue Loading Ticket & Move to Ready for Waybill →
+                  </button>
+                </form>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      } else if (currentTab === 'inv_waybill') {
+        const waybillQueue = filterBySearch(depotTrucks.filter(t => t.stage === 'AWAITING_WAYBILL'));
+        container.innerHTML = `
+          <div class="p-5 sm:p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#e0e4eb] pb-3">
+              <div>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900">Ticketed Trucks — Ready for Waybill (${waybillQueue.length})</h2>
+                <p class="text-xs text-slate-500">Trucks move here immediately upon ticket issuance. Once gantry loading completes, upload Waybill scan from your laptop (or close out now and upload later).</p>
+              </div>
+            </div>
+
+            ${waybillQueue.length === 0 ? `
+              <div class="p-10 text-center rounded-2xl border border-dashed border-[#e0e4eb] text-xs text-slate-500">
+                No ticketed trucks currently awaiting Waybill generation.
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${waybillQueue.map(t => `
+                  <div class="p-5 rounded-2xl border border-[#e0e4eb] bg-[#f6f8fc]/70 space-y-3.5">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Ticketed ${t.timestamps.ticketIssued} • ${t.bay}</span>
+                        <h3 class="font-mono font-extrabold text-base text-slate-900 mt-1">${t.truckId}</h3>
+                        <p class="text-xs text-slate-600">${t.driver} • Ticket: <span class="font-mono font-semibold">${t.ticketNumber}</span></p>
+                      </div>
+                      <span class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-bold">${t.product} • ${t.volume}</span>
+                    </div>
+
+                    <!-- Real Laptop File Upload for Waybill before Closeout -->
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <label class="text-[11px] font-semibold text-slate-700">Attach Signed Waybill from Laptop</label>
+                        <span class="text-[10px] text-slate-400">Optional at closeout</span>
+                      </div>
+                      <input type="file" id="wb-file-${t.truckId}" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="hidden"
+                        onchange="handleFormFilePick('wb_${t.truckId}', this, 'wb-lbl-${t.truckId}')" />
+                      <label for="wb-file-${t.truckId}"
+                        class="flex items-center justify-between px-3 py-2 rounded-xl border border-dashed border-emerald-400 bg-white hover:bg-emerald-50/40 cursor-pointer text-xs">
+                        <span id="wb-lbl-${t.truckId}" class="text-slate-600 truncate">Select Waybill PDF/Image from laptop...</span>
+                        <span class="text-[#006838] font-bold shrink-0 ml-2">Browse</span>
+                      </label>
+                    </div>
+
+                    <button onclick="generateFinalWaybill('${t.truckId}')"
+                      class="w-full py-2.5 px-4 rounded-full bg-[#006838] hover:bg-[#004d29] text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
+                      Generate Waybill & Close Out Dispatch ✓
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      } else {
+        // Closed & Released Jobs (Scoped strictly to Inventory's own documents: Loading Ticket & Waybill)
+        const closed = filterBySearch(depotTrucks.filter(t => t.stage === 'COMPLETED'));
+        container.innerHTML = `
+          <div class="divide-y divide-[#f1f3f4]">
+            ${closed.map(t => {
+              const invMissing = getDeptMissingDocs(t, 'inventory');
+              return `
+                <div onclick="openDocModal('${t.truckId}')"
+                  class="mail-row px-4 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer bg-white">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="font-mono font-bold text-xs sm:text-sm text-slate-900 w-28 shrink-0">${t.truckId}</span>
+                    <div class="truncate text-xs text-slate-700">
+                      <span class="font-semibold text-emerald-700">${t.waybillNumber}</span> •
+                      <span class="font-semibold text-blue-700">${t.ticketNumber}</span>
+                      <span class="text-slate-500 ml-1">— ${t.driver} (${t.product} ${t.volume})</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0 text-xs">
+                    ${invMissing.length > 0
+                      ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">⚠ Missing Inv. Doc: ${invMissing.join(', ')}</span>`
+                      : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">✓ Inventory Docs Complete</span>`
+                    }
+                    <span class="font-mono text-slate-500">${t.timestamps.waybillReleased}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+    }
+
+    function selectInventoryTruck(truckId) {
+      selectedTruckId = truckId;
+      delete pendingUploadFiles.invTicket;
+      renderWorkspace();
+    }
+
+    function submitInventoryTicket(e, truckId) {
+      e.preventDefault();
+      const truck = depotTrucks.find(t => t.truckId === truckId);
+      if (!truck) return;
+      const so = document.getElementById('inv-so-input').value.trim().toUpperCase();
+      const ticketNo = document.getElementById('inv-ticket-input').value.trim().toUpperCase();
+      const bay = document.getElementById('inv-bay-input').value;
+      const selectedFile = pendingUploadFiles.invTicket || null;
+      const now = minsAgoStr(0);
+
+      truck.salesOrder = so;
+      truck.ticketNumber = ticketNo;
+      truck.bay = bay;
+      if (selectedFile) {
+        truck.docs.ticket = buildDocRecord(selectedFile, 'Inventory & Billing', currentRole.user);
+      }
+      // Moves directly to Ready for Waybill (no Loading Ops department)
+      truck.stage = 'AWAITING_WAYBILL';
+      truck.timestamps.ticketIssued = now;
+      truck.durations.invTicket = Math.max(3, truck.durations.invTicket);
+      truck.auditTrail.push({
+        time: now,
+        dept: 'Inventory & Billing',
+        user: currentRole.user,
+        note: selectedFile
+          ? `Verified SO ${so}, generated Loading Ticket ${ticketNo} (${bay}) with file "${selectedFile.name}" & moved directly to Ready for Waybill.`
+          : `Verified SO ${so}, generated Loading Ticket ${ticketNo} (${bay}) & moved directly to Ready for Waybill (Ticket scan pending upload).`
+      });
+
+      delete pendingUploadFiles.invTicket;
+      selectedTruckId = null;
+      renderSidebar();
+      renderWorkspace();
+      showToast('Moved to Ready for Waybill', `Ticket ${ticketNo} issued for ${truckId} (${bay}) and placed in Ready for Waybill.`);
+    }
+
+    function generateFinalWaybill(truckId) {
+      const truck = depotTrucks.find(t => t.truckId === truckId);
+      if (!truck) return;
+      const now = minsAgoStr(0);
+      const wbNo = 'WB-2026-' + Math.floor(7720 + Math.random() * 500);
+      const selectedFile = pendingUploadFiles[`wb_${truckId}`] || null;
+
+      truck.waybillNumber = wbNo;
+      if (selectedFile) {
+        truck.docs.waybill = buildDocRecord(selectedFile, 'Inventory & Billing', currentRole.user);
+      }
+      truck.stage = 'COMPLETED';
+      truck.timestamps.waybillReleased = now;
+      truck.durations.loadingWaybill = Math.max(18, truck.durations.loadingWaybill);
+
+      const totalTat = truck.durations.qhsse + truck.durations.invTicket + truck.durations.loadingWaybill;
+      const missingNow = getDeptMissingDocs(truck, 'inventory');
+
+      truck.auditTrail.push({
+        time: now,
+        dept: 'Inventory & Billing',
+        user: currentRole.user,
+        note: selectedFile
+          ? `Issued Waybill ${wbNo} with file "${selectedFile.name}" & closed dispatch. Total TAT: ${totalTat} mins.`
+          : `Issued Waybill ${wbNo} & closed dispatch without Waybill file scan (${missingNow.join(', ')} flagged for Inventory upload). Total TAT: ${totalTat} mins.`
+      });
+
+      delete pendingUploadFiles[`wb_${truckId}`];
+      renderSidebar();
+      renderWorkspace();
+      showToast(
+        missingNow.length ? 'Closed (Inventory Doc Pending)' : 'Waybill Issued & Inventory Complete',
+        missingNow.length
+          ? `Job ${truckId} closed. Flagged for missing Inventory upload: ${missingNow.join(', ')}.`
+          : `Waybill ${wbNo} completed for ${truckId}. Total TAT: ${totalTat} mins.`
+      );
+    }
+
+    // =========================================================================
+    // DEPARTMENT 3: MANAGEMENT MONITORING & AUDIT OVERSIGHT
+    // =========================================================================
+    function renderManagementWorkspace(container) {
+      const avgQhsse = Math.round(depotTrucks.reduce((s, t) => s + t.durations.qhsse, 0) / depotTrucks.length);
+      const ticketed = depotTrucks.filter(t => t.durations.invTicket > 0);
+      const avgInvTicket = ticketed.length ? Math.round(ticketed.reduce((s, t) => s + t.durations.invTicket, 0) / ticketed.length) : 4;
+      const wbStage = depotTrucks.filter(t => t.durations.loadingWaybill > 0);
+      const avgLoadWb = wbStage.length ? Math.round(wbStage.reduce((s, t) => s + t.durations.loadingWaybill, 0) / wbStage.length) : 20;
+      const totalAvgTat = avgQhsse + avgInvTicket + avgLoadWb;
+
+      const closedTrucks = depotTrucks.filter(t => t.stage === 'COMPLETED');
+      const closedMissing = closedTrucks.filter(t => getMissingDocs(t).length > 0);
+
+      if (currentTab === 'mgmt_analytics') {
+        container.innerHTML = `
+          <div class="p-5 sm:p-6 space-y-6">
+            <!-- Executive Summary Banner -->
+            <div class="bg-gradient-to-r from-[#006838] to-slate-900 text-white rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold uppercase">Streamlined 2-Department Flow</span>
+                <h2 class="text-lg sm:text-xl font-bold mt-1.5">Department Turnaround & Audit Compliance Monitor</h2>
+                <p class="text-xs text-emerald-100 mt-0.5">Average Total Turnaround Time: <strong class="text-amber-300">${totalAvgTat} mins</strong> (down from 95 mins legacy manual queue).</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-right">
+                  <span class="text-[10px] uppercase text-emerald-200 block">Closed Missing Docs</span>
+                  <span class="text-xl font-extrabold ${closedMissing.length > 0 ? 'text-rose-300' : 'text-emerald-300'}">${closedMissing.length} / ${closedTrucks.length}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Missing Document Compliance Alert on Management Dashboard -->
+            ${closedMissing.length > 0 ? `
+              <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-extrabold uppercase">Action Required</span>
+                    <h3 class="text-sm font-bold text-rose-950">${closedMissing.length} Closed-Out Truck(s) Have Department Audit Faults</h3>
+                  </div>
+                  <p class="text-xs text-rose-800">
+                    ${closedMissing.map(t => `<strong>${t.truckId}</strong> [${getFaultingDepartments(t).join(', ')}]`).join(' • ')}. Once the faulting department uploads its file, status updates here automatically.
+                  </p>
+                </div>
+                <button onclick="setDocFilter('missing'); switchTab('doc_uploads')"
+                  class="px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 cursor-pointer">
+                  Inspect & Resolve Faults →
+                </button>
+              </div>
+            ` : `
+              <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900">
+                ✓ 100% Audit Compliance: All closed-out jobs have complete PTL, Loading Ticket, and Waybill scans uploaded.
+              </div>
+            `}
+
+            <!-- 3 Stage Time Breakdown Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 rounded-2xl border border-[#e0e4eb] bg-[#f6f8fc]">
+                <span class="text-[11px] font-bold uppercase text-emerald-700">1. QHSSE / Safety Clearance</span>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">${avgQhsse} mins</div>
+                <p class="text-xs text-slate-500 mt-1">Safety inspection & PTL handoff</p>
+                <div class="w-full h-1.5 bg-slate-200 rounded-full mt-3 overflow-hidden">
+                  <div class="h-full bg-emerald-600 rounded-full" style="width: ${(avgQhsse / totalAvgTat) * 100}%"></div>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-2xl border border-[#e0e4eb] bg-[#f6f8fc]">
+                <span class="text-[11px] font-bold uppercase text-blue-700">2. Inventory (Ticket Prep)</span>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">${avgInvTicket} mins</div>
+                <p class="text-xs text-slate-500 mt-1">Advance ticket generation & bay routing</p>
+                <div class="w-full h-1.5 bg-slate-200 rounded-full mt-3 overflow-hidden">
+                  <div class="h-full bg-blue-600 rounded-full" style="width: ${(avgInvTicket / totalAvgTat) * 100}%"></div>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-2xl border border-[#e0e4eb] bg-[#f6f8fc]">
+                <span class="text-[11px] font-bold uppercase text-purple-700">3. Loading & Waybill Closeout</span>
+                <div class="text-2xl font-extrabold text-slate-900 mt-1">${avgLoadWb} mins</div>
+                <p class="text-xs text-slate-500 mt-1">Gantry bay loading & Inventory waybill issue</p>
+                <div class="w-full h-1.5 bg-slate-200 rounded-full mt-3 overflow-hidden">
+                  <div class="h-full bg-purple-600 rounded-full" style="width: ${(avgLoadWb / totalAvgTat) * 100}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Truck-by-Truck Time & Document Audit Table -->
+            <div class="border border-[#e0e4eb] rounded-2xl overflow-hidden">
+              <div class="px-4 py-3 bg-[#f6f8fc] border-b border-[#e0e4eb] flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-900">Department Time Spent & Audit Document Status</h3>
+                <span class="text-xs text-slate-500">Click any row to view uploaded files & trail</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-white border-b border-[#e0e4eb] text-[11px] font-bold uppercase text-slate-500">
+                      <th class="py-3 px-4">Truck ID</th>
+                      <th class="py-3 px-4">1. QHSSE</th>
+                      <th class="py-3 px-4">2. Ticket</th>
+                      <th class="py-3 px-4">3. Load & WB</th>
+                      <th class="py-3 px-4">Total TAT</th>
+                      <th class="py-3 px-4">Job Status</th>
+                      <th class="py-3 px-4">Audit & Department Fault Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[#f1f3f4]">
+                    ${filterBySearch(depotTrucks).map(t => {
+                      const tat = t.durations.qhsse + t.durations.invTicket + t.durations.loadingWaybill;
+                      const faults = getFaultingDepartments(t);
+                      return `
+                        <tr onclick="openDocModal('${t.truckId}')" class="mail-row cursor-pointer bg-white">
+                          <td class="py-3 px-4 font-mono font-bold text-slate-900">${t.truckId}</td>
+                          <td class="py-3 px-4 font-mono text-emerald-700 font-semibold">${t.durations.qhsse}m</td>
+                          <td class="py-3 px-4 font-mono text-blue-700 font-semibold">${t.durations.invTicket ? t.durations.invTicket + 'm' : '—'}</td>
+                          <td class="py-3 px-4 font-mono text-purple-700 font-semibold">${t.durations.loadingWaybill ? t.durations.loadingWaybill + 'm' : '—'}</td>
+                          <td class="py-3 px-4 font-mono font-extrabold text-slate-900">${tat} mins</td>
+                          <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${t.stage === 'COMPLETED' ? 'bg-slate-800 text-white' : 'bg-blue-100 text-blue-800'}">
+                              ${formatStageLabel(t.stage)}
+                            </span>
+                          </td>
+                          <td class="py-3 px-4">
+                            ${faults.length > 0
+                              ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">⚠ ${faults.join(' | ')}</span>`
+                              : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">✓ All Docs Uploaded</span>`
+                            }
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Live & Closed Jobs Gmail List (Management Global View with Fault Attribution)
+        const list = filterBySearch(depotTrucks);
+        container.innerHTML = `
+          <div class="divide-y divide-[#f1f3f4]">
+            ${list.map(t => {
+              const tat = t.durations.qhsse + t.durations.invTicket + t.durations.loadingWaybill;
+              const faults = getFaultingDepartments(t);
+              return `
+                <div onclick="openDocModal('${t.truckId}')"
+                  class="mail-row px-4 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer bg-white">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="font-mono font-bold text-sm text-slate-900 w-28 shrink-0">${t.truckId}</span>
+                    <div class="truncate text-xs text-slate-700">
+                      <strong>${t.driver}</strong> (${t.product} • ${t.volume}) —
+                      <span class="text-slate-500">Safety: ${t.durations.qhsse}m | Ticket: ${t.durations.invTicket}m | Load & WB: ${t.durations.loadingWaybill}m</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0 text-xs">
+                    ${faults.length > 0
+                      ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">⚠ ${faults.join(' | ')}</span>`
+                      : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">✓ Complete</span>`
+                    }
+                    <span class="px-2.5 py-0.5 rounded-full bg-[#eaf1fb] text-[#041e49] font-semibold text-[11px]">${formatStageLabel(t.stage)}</span>
+                    <span class="font-mono font-bold text-slate-900">${tat}m</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // SHARED HELPERS: STAGE LABELS, SIMULATION & AUDIT MODAL
+    // =========================================================================
+    function formatStageLabel(stage) {
+      const map = {
+        AWAITING_QHSSE: 'Pending QHSSE',
+        AWAITING_TICKET: 'In Inventory Inbox',
+        AWAITING_WAYBILL: 'Ready for Waybill',
+        COMPLETED: 'Closed & Released'
+      };
+      return map[stage] || stage;
+    }
+
+    function simulateNewGateTruck() {
+      const plates = ['LAG-910-MK', 'KJA-554-PL', 'EPE-302-RT', 'ABJ-771-QW', 'IKD-829-VN'];
+      const drivers = ['Nnamdi Azikiwe', 'Tunde Bakare', 'Yusuf Garba', 'Chukwuma Obi', 'Adebayo Bello'];
+      const products = ['PMS (Petrol)', 'AGO (Diesel)', 'ATK (Aviation)'];
+      const vols = ['33,000 L', '40,000 L', '45,000 L'];
+
+      const plate = plates[Math.floor(Math.random() * plates.length)];
+      const driver = drivers[Math.floor(Math.random() * drivers.length)];
+      const product = products[Math.floor(Math.random() * products.length)];
+      const volume = vols[Math.floor(Math.random() * vols.length)];
+      const now = minsAgoStr(0);
+
+      depotTrucks.unshift({
+        truckId: plate,
+        driver,
+        transporter: 'Ardova Logistics',
+        product,
+        volume,
+        stage: 'AWAITING_QHSSE',
+        ptlNumber: '',
+        salesOrder: 'SO-AP-' + Math.floor(88300 + Math.random() * 500),
+        ticketNumber: '',
+        bay: '',
+        waybillNumber: '',
+        docs: { ptl: null, ticket: null, waybill: null },
+        durations: { qhsse: 3, invTicket: 0, loadingWaybill: 0 },
+        timestamps: { gateIn: now, qhsseSent: null, ticketIssued: null, waybillReleased: null },
+        auditTrail: [{ time: now, dept: 'Gate Security', user: 'S. Balogun', note: `Truck ${plate} arrived at QHSSE Safety Inspection Gate.` }]
+      });
+
+      renderSidebar();
+      renderWorkspace();
+      showToast('New Gate Arrival', `Truck ${plate} (${driver}) added to QHSSE Clearance Queue.`);
+    }
+
+    function openDocModal(truckId) {
+      const t = depotTrucks.find(x => x.truckId === truckId);
+      if (!t) return;
+      document.getElementById('modal-title').textContent = `${t.truckId} — Audit Dossier & Uploaded Files`;
+      const tat = t.durations.qhsse + t.durations.invTicket + t.durations.loadingWaybill;
+
+      document.getElementById('modal-content').innerHTML = `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#f6f8fc] p-3.5 rounded-2xl border border-[#e0e4eb]">
+          <div><span class="text-[10px] text-slate-400 uppercase font-bold block">Driver</span><strong class="text-slate-900">${t.driver}</strong></div>
+          <div><span class="text-[10px] text-slate-400 uppercase font-bold block">Product</span><strong class="text-slate-900">${t.product} (${t.volume})</strong></div>
+          <div><span class="text-[10px] text-slate-400 uppercase font-bold block">Sales Order</span><strong class="font-mono text-slate-900">${t.salesOrder}</strong></div>
+          <div><span class="text-[10px] text-slate-400 uppercase font-bold block">Total TAT</span><strong class="font-mono text-[#006838]">${tat} mins</strong></div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Audit Documents (Click to Preview Uploaded File)</h4>
+            <button onclick="closeDocModal(); switchTab('doc_uploads')" class="text-xs font-bold text-[#006838] hover:underline cursor-pointer">
+              + Upload Missing Files
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+            <div class="p-3 rounded-xl border ${t.docs.ptl ? 'border-emerald-200 bg-emerald-50/50' : 'border-rose-200 bg-rose-50/50'}">
+              <div class="font-bold ${t.docs.ptl ? 'text-emerald-800' : 'text-rose-800'}">1. Permit to Load (PTL)</div>
+              ${t.docs.ptl ? `
+                <div class="font-mono text-[11px] mt-1 truncate">${t.docs.ptl.name}</div>
+                <a href="${t.docs.ptl.url}" target="_blank" class="inline-block mt-1.5 text-[11px] font-bold text-blue-700 hover:underline">↗ Open File</a>
+              ` : `<div class="text-[11px] text-rose-700 mt-1 font-medium">⚠ Missing Upload</div>`}
+            </div>
+
+            <div class="p-3 rounded-xl border ${t.docs.ticket ? 'border-blue-200 bg-blue-50/50' : 'border-rose-200 bg-rose-50/50'}">
+              <div class="font-bold ${t.docs.ticket ? 'text-blue-800' : 'text-rose-800'}">2. Loading Ticket</div>
+              ${t.docs.ticket ? `
+                <div class="font-mono text-[11px] mt-1 truncate">${t.docs.ticket.name}</div>
+                <a href="${t.docs.ticket.url}" target="_blank" class="inline-block mt-1.5 text-[11px] font-bold text-blue-700 hover:underline">↗ Open File</a>
+              ` : `<div class="text-[11px] text-rose-700 mt-1 font-medium">⚠ Missing Upload</div>`}
+            </div>
+
+            <div class="p-3 rounded-xl border ${t.docs.waybill ? 'border-purple-200 bg-purple-50/50' : 'border-rose-200 bg-rose-50/50'}">
+              <div class="font-bold ${t.docs.waybill ? 'text-purple-800' : 'text-rose-800'}">3. Official Waybill</div>
+              ${t.docs.waybill ? `
+                <div class="font-mono text-[11px] mt-1 truncate">${t.docs.waybill.name}</div>
+                <a href="${t.docs.waybill.url}" target="_blank" class="inline-block mt-1.5 text-[11px] font-bold text-blue-700 hover:underline">↗ Open File</a>
+              ` : `<div class="text-[11px] text-rose-700 mt-1 font-medium">⚠ Missing Upload</div>`}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Immutable Department Timestamp Trail</h4>
+          <div class="space-y-2 border-l-2 border-[#006838] pl-3 ml-1">
+            ${t.auditTrail.map(a => `
+              <div class="p-2.5 rounded-xl bg-[#f6f8fc] border border-[#e0e4eb]">
+                <div class="flex justify-between text-[11px]">
+                  <strong class="text-slate-800">${a.dept} • ${a.user}</strong>
+                  <span class="font-mono font-semibold text-[#006838]">${a.time}</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-0.5">${a.note}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      document.getElementById('doc-modal').classList.remove('hidden');
+    }
+
+    function closeDocModal() {
+      document.getElementById('doc-modal').classList.add('hidden');
+    }
+
+    function showToast(title, msg) {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = 'pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-lg border-l-4 border-emerald-400 text-xs';
+      el.innerHTML = `<div class="font-bold text-emerald-300">${title}</div><div class="text-slate-200 mt-0.5">${msg}</div>`;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    function updateClock() {
+      const el = document.getElementById('live-clock');
+      if (el) el.textContent = new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
